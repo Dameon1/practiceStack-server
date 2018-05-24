@@ -25,12 +25,20 @@ app.use(
   })
 );
 
+
 app.get('/api/cheeses',(req,res,next) => {
-  console.log('Hello World');
   res.json(cheeses);
+  // res.json(cheeses.map(cheese=> {
+  //   console.log(cheese);
+  // }));
+  
 });
 
+app.get('/',(req,res,next)=>{
+  res.json('Hello World');
+});
 
+app.put('/',(req,res,next) => {} );
 
 
 
