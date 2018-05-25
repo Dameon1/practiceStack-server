@@ -53,11 +53,18 @@ app.post('/',(req,res,next) => {
   Cheese.create({title})
     .then(results => {
       console.log(results);
-      res.json(results);
+      res.status(201).json(results);
     }).catch(next);
 } );
 
-
+app.delete('/cheese/:id',(req,res,next) => {
+  let {id} = req.params;
+  Cheese.findOneAndRemove({_id:id})
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch(next);
+});
 
 
 
