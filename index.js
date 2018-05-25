@@ -1,44 +1,78 @@
 'use strict';
 
 const express = require('express');
+const app = express();
 const cors = require('cors');
 const morgan = require('morgan');
-
-const { PORT, CLIENT_ORIGIN } = require('./config');
+let mongoose = require('mongoose');
+const Cheese = require('./models/cheeses');
+const { PORT, CLIENT_ORIGIN ,MONGODB_URI} = require('./config');
 const { dbConnect } = require('./db-mongoose');
-
-
-const app = express();
 
 const cheeses = require('./cheeses');
 
+//testing Api-spoonacular------------------------
+// const RapidAPI = new require('rapidapi-connect');
+// const rapid = new RapidAPI('what2make_5b0758abe4b0cbaa221aab4d', '7eabe9af-ed09-430a-b4e1-df492b78574d');
+// app.get(rapid.call('NasaAPI', 'getPictureOfTheDay', {'{}'});)
 
-app.use(
-  morgan(process.env.NODE_ENV === 'production' ? 'common' : 'dev', {
-    skip: (req, res) => process.env.NODE_ENV === 'test'
-  })
-);
-
-app.use(
-  cors({
-    origin: CLIENT_ORIGIN
-  })
-);
+//
+app.use(express.json());
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'common' : 'dev', { skip: (req, res) => process.env.NODE_ENV === 'test' }));
+app.use(cors({ origin: CLIENT_ORIGIN }));
 
 
 app.get('/api/cheeses',(req,res,next) => {
   res.json(cheeses);
   // res.json(cheeses.map(cheese=> {
   //   console.log(cheese);
-  // }));
-  
+  // }));  
+}); 
+
+app.get('/api/cheeses/:id', (req, res, next) => {
+  let {id} = req.params;
+  console.log(id);
+  Cheese.findOne({_id:id})  
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+app.get('/', ( req, res, next) => {
+  Cheese.find()
+    .then(results => {
+      res.json(results);
+    })
+    .catch(next);
 });
 
-app.get('/',(req,res,next)=>{
-  res.json('Hello World');
-});
+app.post('/',(req,res,next) => {
+  let {title} = req.body;
+  Cheese.create({title})
+    .then(results => {
+      console.log(results);
+      res.json(results);
+    }).catch(next);
+} );
 
-app.put('/',(req,res,next) => {} );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -55,9 +89,26 @@ function runServer(port = PORT) {
     });
 }
 
+// if (require.main === module) {
+//   dbConnect();
+//   runServer();
+// }
 if (require.main === module) {
-  dbConnect();
-  runServer();
-}
+  mongoose.connect(MONGODB_URI)
+    .then(instance => {
+      const conn = instance.connections[0];
+      console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
+    })
+    .catch(err => {
+      console.error(`ERROR: ${err.message}`);
+      console.error('\n === Did you remember to start `mongod`? === \n');
+      console.error(err);
+    });
 
+  app.listen(PORT, function () {
+    console.info(`Server listening on ${this.address().port}`);
+  }).on('error', err => {
+    console.error(err);
+  });
+}
 module.exports = { app };
