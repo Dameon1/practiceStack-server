@@ -11,22 +11,12 @@ const { dbConnect } = require('./db-mongoose');
 
 const cheeses = require('./cheeses');
 
-//testing Api-spoonacular------------------------
-// const RapidAPI = new require('rapidapi-connect');
-// const rapid = new RapidAPI('what2make_5b0758abe4b0cbaa221aab4d', '7eabe9af-ed09-430a-b4e1-df492b78574d');
-// app.get(rapid.call('NasaAPI', 'getPictureOfTheDay', {'{}'});)
-
-//
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'common' : 'dev', { skip: (req, res) => process.env.NODE_ENV === 'test' }));
 app.use(cors({ origin: CLIENT_ORIGIN }));
 
-
 app.get('/api/cheeses',(req,res,next) => {
   res.json(cheeses);
-  // res.json(cheeses.map(cheese=> {
-  //   console.log(cheese);
-  // }));  
 }); 
 
 app.get('/api/cheeses/:id', (req, res, next) => {
@@ -52,37 +42,20 @@ app.post('/',(req,res,next) => {
   let {title} = req.body;
   Cheese.create({title})
     .then(results => {
-      console.log(results);
+     
       res.status(201).json(results);
     }).catch(next);
 } );
 
 app.delete('/cheese/:id',(req,res,next) => {
   let {id} = req.params;
+  
   Cheese.findOneAndRemove({_id:id})
     .then(() => {
       res.status(204).end();
     })
     .catch(next);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 function runServer(port = PORT) {
@@ -119,3 +92,7 @@ if (require.main === module) {
   });
 }
 module.exports = { app };
+//testing Api-spoonacular------------------------
+// const RapidAPI = new require('rapidapi-connect');
+// const rapid = new RapidAPI('what2make_5b0758abe4b0cbaa221aab4d', '7eabe9af-ed09-430a-b4e1-df492b78574d');
+// app.get(rapid.call('NasaAPI', 'getPictureOfTheDay', {'{}'});)
